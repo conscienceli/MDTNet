@@ -1,0 +1,6 @@
+data/*
+generated/*
+results/*
+.vscode/*
+*.pth
+*__pycache__*
