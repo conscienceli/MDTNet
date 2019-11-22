@@ -7,11 +7,22 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 
-def train_model(model, device, optimizer, scheduler, BATCH_SIZE, NUM_WORKERS, num_epochs=25):
+def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func, scheduler, num_epochs=25):
+    need_mse = False
+    need_acc = False
+    if model_name == 'type':
+        need_acc = True
+        topk = (1,3,)
+    elif model_name == 'level_cls':
+        need_acc = True
+        need_mse = True
+        topk = (1,2,)
+    elif model_name == 'level':
+        need_mse = True
+    
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = 1e10
     
-    dataloaders_all = gen_train_loaders(BATCH_SIZE, NUM_WORKERS)
     dataloaders = {
         'train': dataloaders_all[0],
         'val': dataloaders_all[1]
@@ -36,6 +47,15 @@ def train_model(model, device, optimizer, scheduler, BATCH_SIZE, NUM_WORKERS, nu
 
             epoch_samples = 0
             
+            if need_acc:
+                maxk = max(topk)
+                corrects = [0 for i in topk]
+                totals = [0 for i in topk]
+
+            if need_mse:
+                se = 0
+                totals_se = 0
+
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
                 labels = labels.to(device)             
@@ -47,8 +67,23 @@ def train_model(model, device, optimizer, scheduler, BATCH_SIZE, NUM_WORKERS, nu
                 # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model(inputs)
-                    # loss = F.binary_cross_entropy_with_logits(outputs, labels)
-                    loss = torch.nn.MSELoss(size_average=False)(outputs, labels)
+                    loss = loss_func(outputs, labels)
+
+                    if need_acc:
+                        _, pred_acc = outputs.topk(maxk, 1, True, True)
+                        pred_acc = pred_acc.t()
+                        correct = pred_acc.eq(labels.max(1)[1].view(1, -1).expand_as(pred_acc))
+
+                        for k_id, k in enumerate(topk):
+                            correct_k = correct[:k].view(-1).float().sum(0)
+                            corrects[k_id] += correct_k
+                            totals[k_id] += len(labels)
+
+                    if len(outputs) > 1 and need_mse:
+                        preds_mse = outputs.max(1)[1]
+                        labels_mse = labels.max(1)[1]
+                        se += ((preds_mse-labels_mse)*(preds_mse-labels_mse)).sum()
+                        totals_se += len(labels)
 
                     # backward + optimize only if in training phase
                     if phase == 'train':
@@ -57,6 +92,13 @@ def train_model(model, device, optimizer, scheduler, BATCH_SIZE, NUM_WORKERS, nu
 
                 # statistics
                 epoch_samples += inputs.size(0)
+            
+            if need_acc:
+                for k_id, k in enumerate(topk):
+                    print(f'accuracy on {phase}, top{k}: {100 * corrects[k_id] / totals[k_id]: .2f}%', end='\t')
+            if need_mse:
+                print(f'mse on {phase}: {float(se) / float(totals_se) : .2f}')
+
 
             epoch_loss = loss / epoch_samples
             print(phase, " loss: ", epoch_loss.item())
@@ -66,7 +108,7 @@ def train_model(model, device, optimizer, scheduler, BATCH_SIZE, NUM_WORKERS, nu
                 print("saving best model")
                 best_loss = epoch_loss
                 best_model_wts = copy.deepcopy(model.state_dict())
-                torch.save(model.state_dict(), 'best_state.pth') 
+                torch.save(model.state_dict(), f'best_state_{model_name}.pth') 
 
         time_elapsed = time.time() - since
         print('{:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
