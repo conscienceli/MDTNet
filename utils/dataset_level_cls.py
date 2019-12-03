@@ -21,11 +21,11 @@ class Crossing_Dataset(torch.utils.data.Dataset):
             records = records.split('\n')[-100:]
         for record in records[1:]:
             record = record.split(',')
-            sevirity = int(record[4])
-            if sevirity > 3 or sevirity < 0:
+            severity = int(record[4])
+            if severity > 3 or severity < 0:
                 continue
             type_label = np.zeros((4))
-            type_label[sevirity] = 1
+            type_label[severity] = 1
             path = record[3].split('/')[1:]
             path = './data/' + '/'.join(path)
             self.images.append(path)

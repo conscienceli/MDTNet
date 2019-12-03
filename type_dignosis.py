@@ -25,7 +25,7 @@ optimizer_ft = torch.optim.Adam(model.parameters(), lr=1e-4)
 
 exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
 
-loss_func = F.binary_cross_entropy_with_logits
+loss_func = F.cross_entropy
 if not os.path.exists('best_state_type.pth'):
     model = train.train_model('type', model, dataloaders_all, device, optimizer_ft, loss_func, exp_lr_scheduler,  num_epochs=20000)
 else:
@@ -63,13 +63,13 @@ records = records.split('\n')[-100:]
 
 for record in records[1:]:
     record = record.split(',')
-    sevirity = int(record[4])
-    if sevirity > 3 or sevirity < 0:
+    severity = int(record[4])
+    if severity > 3 or severity < 0:
         continue
     path = record[3].split('/')[1:]
     path = './data/' + '/'.join(path)
     images.append(path)
-    labels.append(sevirity)
+    labels.append(severity)
 
 label_avg = sum(labels) / len(labels)
 mse = 0

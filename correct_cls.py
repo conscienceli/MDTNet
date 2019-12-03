@@ -3,15 +3,15 @@
 
 # %%
 from utils import dataset, train
-from utils.dataset_level_cls import gen_train_loaders
-from torchvision.models import resnet18
+from utils.dataset_correct import gen_train_loaders
+from torchvision.models import resnet50
 import torch
 import torch.nn as nn
 import os
 import torch.nn.functional as F
 
-model = resnet18(pretrained=True)
-model.fc = nn.Linear(in_features=512, out_features=4, bias=True)
+model = resnet50(pretrained=True)
+model.fc = nn.Linear(in_features=2048, out_features=1, bias=True)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 model = model.to(device)
@@ -25,12 +25,12 @@ optimizer_ft = torch.optim.Adam(model.parameters(), lr=1e-4)
 
 exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
 
-loss_func = F.cross_entropy
-if not os.path.exists('best_state_level_cls.pth'):
-    model = train.train_model('level_cls', model, dataloaders_all, device, optimizer_ft, loss_func, exp_lr_scheduler,  num_epochs=20000)
+loss_func = F.binary_cross_entropy_with_logits
+if not os.path.exists('best_state_correct.pth'):
+    model = train.train_model('correct', model, dataloaders_all, device, optimizer_ft, loss_func, exp_lr_scheduler,  num_epochs=20000)
 else:
-    model.load_state_dict(torch.load('best_state_level_cls.pth'))
-    model = train.train_model('level_cls', model, dataloaders_all, device, optimizer_ft, loss_func, exp_lr_scheduler, num_epochs=20000)
+    model.load_state_dict(torch.load('best_state_correct.pth'))
+    model = train.train_model('correct', model, dataloaders_all, device, optimizer_ft, loss_func, exp_lr_scheduler, num_epochs=20000)
 
 
 # %%
@@ -49,9 +49,8 @@ model.fc = nn.Linear(in_features=2048, out_features=1, bias=True)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 model = model.to(device)
-model.load_state_dict(torch.load('best_state_level_cls.pth'))
+model.load_state_dict(torch.load('best_state_correct.pth'))
 model.eval()   # Set model to evaluate mode
-
 
 images = []
 labels = []
@@ -59,21 +58,27 @@ labels = []
 csv_path = './data/patch - patch_list.csv'
 with open(csv_path, 'r', encoding='utf-8') as f:
     records = f.read()
-records = records.split('\n')[-100:]
+records_number = len(records.split('\n'))
+test_range = 100
+# test_range = records_number-1
+records = records.split('\n')[-test_range:]
 
-for record in records[1:]:
+for record in records:
     record = record.split(',')
     severity = int(record[4])
+    type_label = np.ones((1))
     if severity > 3 or severity < 0:
-        continue
+        type_label[0] = 0
     path = record[3].split('/')[1:]
     path = './data/' + '/'.join(path)
     images.append(path)
-    labels.append(severity)
+    labels.append(type_label)
 
-label_avg = sum(labels) / len(labels)
-mse = 0
-vari = 0
+corrects = 0.
+tp = 0.
+tn = 0.
+fp = 0.
+fn = 0.
 for image_id, image in enumerate(images):
     image = Image.open(image)
     image = np.array(image)[1422:1422+345, 150:150+345,:]
@@ -87,17 +92,33 @@ for image_id, image in enumerate(images):
     image = image.to(device)
     model = model.to(device)
     preds = model(image)
+    preds = nn.functional.sigmoid(preds)
     print(preds.item(), labels[image_id])
 
-    mse = mse + (preds.item() - labels[image_id])*(preds.item() - labels[image_id])
-    vari = vari + (preds.item() - label_avg)*(preds.item() - label_avg)
+    isCorrect = 'Wrong'
+    if (preds.item() >= 0.5) == (labels[image_id] > 0):
+        corrects += 1.
+        isCorrect = 'True'
+    
+    if preds.item() >= 0.5 and labels[image_id] > 0:
+        tp += 1.
+    elif preds.item() < 0.5 and labels[image_id] > 0:
+        fp += 1.
+    elif preds.item() >= 0.5 and labels[image_id] == 0:
+        fn += 1.
+    elif preds.item() < 0.5 and labels[image_id] == 0:
+        tn += 1.
 
-    raw_image.save(f'results/ID({image_id})-PR({preds.item():.2})-GT({labels[image_id]}).png')
+    raw_image.save(f'results_correct/ROW({image_id+records_number-test_range+1:04})-PR({preds.item():.2})-GT({labels[image_id]})-{isCorrect}.png')
 
     model = model.cpu()
-    vis_cam(device, model, raw_image, 0, f'ID({image_id})-PR({preds.item():.2})-GT({labels[image_id]})')
+    vis_cam(device, model, raw_image, 0, f'ROW({image_id+records_number-test_range+1:04})-PR({preds.item():.2})-GT({labels[image_id]})-{isCorrect}', directory='./results_correct')
 
+print('accuracy: ', corrects/ float(len(images)))
+print('precision: ', tp/(tp+fp))
+print('recall: ', tp/(tp+fn))
     # break
-mse = mse / len(labels)
-vari = vari / len(labels)
-print(mse, vari)
+
+
+
+# %%

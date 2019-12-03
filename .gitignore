@@ -1,6 +1,6 @@
 data/*
 generated/*
-results/*
+results*/*
 .vscode/*
 *.pth
 *__pycache__*

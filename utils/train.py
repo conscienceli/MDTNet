@@ -10,9 +10,13 @@ from torch.autograd import Variable
 def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func, scheduler, num_epochs=25):
     need_mse = False
     need_acc = False
+    need_acc_single_class = False
     if model_name == 'type':
         need_acc = True
         topk = (1,3,)
+    elif model_name == 'correct':
+        need_acc_single_class = True
+        topk = (1,)
     elif model_name == 'level_cls':
         need_acc = True
         need_mse = True
@@ -51,6 +55,10 @@ def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func,
                 maxk = max(topk)
                 corrects = [0 for i in topk]
                 totals = [0 for i in topk]
+            
+            if need_acc_single_class:
+                correct = 0
+                total = 0
 
             if need_mse:
                 se = 0
@@ -79,6 +87,11 @@ def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func,
                             corrects[k_id] += correct_k
                             totals[k_id] += len(labels)
 
+                    if need_acc_single_class:
+                        outputs_category = outputs > 0.0
+                        correct += outputs_category.eq(labels > 0).sum()
+                        total += len(labels)
+
                     if len(outputs) > 1 and need_mse:
                         preds_mse = outputs.max(1)[1]
                         labels_mse = labels.max(1)[1]
@@ -98,6 +111,8 @@ def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func,
                     print(f'accuracy on {phase}, top{k}: {100 * corrects[k_id] / totals[k_id]: .2f}%', end='\t')
             if need_mse:
                 print(f'mse on {phase}: {float(se) / float(totals_se) : .2f}')
+            if need_acc_single_class:
+                print(f'accuracy on {phase}: {100 * correct / total: .2f}%')
 
 
             epoch_loss = loss / epoch_samples

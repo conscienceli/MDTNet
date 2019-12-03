@@ -10,7 +10,7 @@ from utils.vis.gradcam import GradCam
 from utils.vis.misc_functions import save_class_activation_images
 
 
-def vis_cam(device, model, raw_image, target_class, file_name_to_export):
+def vis_cam(device, model, raw_image, target_class, file_name_to_export, directory='./results'):
     image = np.array(raw_image)
     original_image = raw_image
     transform = transforms.Compose([
@@ -25,4 +25,4 @@ def vis_cam(device, model, raw_image, target_class, file_name_to_export):
     # Generate cam mask
     cam = grad_cam.generate_cam(image, target_class)
     # Save mask
-    save_class_activation_images(original_image, cam, file_name_to_export)
+    save_class_activation_images(original_image, cam, file_name_to_export, directory)

@@ -21,13 +21,13 @@ class Crossing_Dataset(torch.utils.data.Dataset):
             records = records.split('\n')[-100:]
         for record in records[1:]:
             record = record.split(',')
-            sevirity = int(record[4])
+            severity = int(record[4])
             crossing_type = record[5]
             if len(crossing_type) > 0:
                 crossing_type = int(crossing_type)
             else:
                 continue
-            if sevirity > 3 or sevirity < 0:
+            if severity > 3 or severity < 0:
                 continue
             type_label = np.zeros((15))
             type_label[crossing_type] = 1

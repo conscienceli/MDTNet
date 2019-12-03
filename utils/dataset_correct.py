@@ -22,12 +22,13 @@ class Crossing_Dataset(torch.utils.data.Dataset):
         for record in records[1:]:
             record = record.split(',')
             severity = int(record[4])
+            type_label = np.ones((1))
             if severity > 3 or severity < 0:
-                continue
+                type_label[0] = 0
             path = record[3].split('/')[1:]
             path = './data/' + '/'.join(path)
             self.images.append(path)
-            self.labels.append(severity)
+            self.labels.append(type_label)
                 
         assert(len(self.images) == len(self.labels))
         print('data_num: ',len(self.images))
@@ -51,7 +52,7 @@ class Crossing_Dataset(torch.utils.data.Dataset):
             image = self.transform(image)
         tensor_transform = transforms.Compose([transforms.ToTensor()])
         # label = tensor_transform(label)
-        label = np.array([label], dtype=np.float32)
+        label = np.array(label, dtype=np.float32)
         
         return [image, label]
 
@@ -72,8 +73,8 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
             transforms.ToTensor(),
         ]))
     
-    if os.path.exists('data/sampler.pickle'):
-        with open('data/sampler.pickle', 'rb') as f:
+    if os.path.exists('data/sampler_correct.pickle'):
+        with open('data/sampler_correct.pickle', 'rb') as f:
             train_sampler, valid_sampler = pickle.load(f)
     else:
         num_train = len(train_dataset)
@@ -88,7 +89,7 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
         np.random.shuffle(valid_idx)
         train_sampler = SubsetRandomSampler(train_idx)
         valid_sampler = SubsetRandomSampler(valid_idx)
-        with open('data/sampler.pickle', 'wb') as f:
+        with open('data/sampler_correct.pickle', 'wb') as f:
             pickle.dump([train_sampler, valid_sampler],f)
 
     train_loader = torch.utils.data.DataLoader(
