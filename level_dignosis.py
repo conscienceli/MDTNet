@@ -25,11 +25,7 @@ optimizer_ft = torch.optim.Adam(model.parameters(), lr=1e-4)
 exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
 
 loss_func = nn.MSELoss(size_average=False)
-if not os.path.exists('best_state_level.pth'):
-    model = train.train_model('level', model, dataloaders_all, device, optimizer_ft, loss_func, exp_lr_scheduler, num_epochs=20000)
-else:
-    model.load_state_dict(torch.load('best_state_level.pth'))
-    model = train.train_model('level', model, dataloaders_all, device, optimizer_ft, loss_func, exp_lr_scheduler, num_epochs=20000)
+model = train.train_model('level', model, dataloaders_all, device, optimizer_ft, loss_func, exp_lr_scheduler, num_epochs=20000)
 
 
 # %%
@@ -49,7 +45,8 @@ model.fc = nn.Linear(in_features=2048, out_features=1, bias=True)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 model = model.to(device)
-model.load_state_dict(torch.load('best_state_level.pth'))
+checkpoint = torch.load('./saved_models/level_best.pth.tar')
+model.load_state_dict(checkpoint['state_dict'])
 model.eval()   # Set model to evaluate mode
 
 

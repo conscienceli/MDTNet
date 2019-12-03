@@ -3,4 +3,5 @@ generated/*
 results*/*
 .vscode/*
 *.pth
+*.tar
 *__pycache__*
