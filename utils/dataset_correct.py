@@ -25,8 +25,8 @@ class Crossing_Dataset(torch.utils.data.Dataset):
             type_label = np.ones((1))
             if severity > 3 or severity < 0:
                 type_label[0] = 0
-            path = record[3].split('/')[1:]
-            path = './data/' + '/'.join(path)
+            path = record[3].split('/')[2:]
+            path = './data/Archive_cropped/' + '/'.join(path)
             self.images.append(path)
             self.labels.append(type_label)
                 
@@ -43,9 +43,10 @@ class Crossing_Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):        
         image = self.images[idx]
         image = Image.open(image)
-        image = np.array(image)[1422:1422+345, 150:150+345,:]
-        image = Image.fromarray(image, mode='RGB')
         
+        #for gc only
+        # image = np.array(image)[:,:,1][...,np.newaxis]
+
         label = self.labels[idx]
         
         if self.transform:
@@ -64,6 +65,10 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
         csv_path,
         transform = transforms.Compose([
             ImgAugTransform(),
+
+            #for gc only
+            # lambda x: Image.fromarray(x[:,:,0], mode='L'),
+
             lambda x: Image.fromarray(x),
             transforms.ToTensor(),
         ]))
