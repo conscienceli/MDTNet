@@ -5,3 +5,5 @@ results*/*
 *.pth
 *.tar
 *__pycache__*
+*.eps
+*.csv
