@@ -14,7 +14,10 @@ if config == "pre_trained_resnet50":
     from torchvision.models import resnet50
     model = resnet50(pretrained=True)
     model.fc = nn.Linear(in_features=2048, out_features=4, bias=True)
+    
+    #for gc only
     # model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    
     model_name = 'level_cls_resnet'
     BATCH_SIZE = 96
     NUM_WORKERS = 8
@@ -22,16 +25,22 @@ elif config == "pre_trained_inception_v3":
     from torchvision.models import inception_v3
     model = inception_v3(pretrained=True)
     model.fc = nn.Linear(in_features=2048, out_features=4, bias=True)
+
+    #for gc only
     # model.Conv2d_1a_3x3.conv = nn.Conv2d(1, 32, bias=False, kernel_size=3, stride=2)
-    model.transform_input = False
+    # model.transform_input = False
+
     model_name = 'level_cls_inception'
     BATCH_SIZE = 128
     NUM_WORKERS = 8
 elif config == "pre_trained_densenet":
     from torchvision.models import densenet121
     model = densenet121(pretrained=True)
-    # model.features[0] = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
     model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+
+    #for gc only
+    # model.features[0] = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    
     model_name = 'level_cls_densenet'
     BATCH_SIZE = 64
     NUM_WORKERS = 8
@@ -47,6 +56,7 @@ print(device)
 model = model.to(device)
 
 # %% For Training
+
 from utils import dataset, train
 from utils.dataset_level_cls import gen_train_loaders
 import torch.nn.functional as F
@@ -65,6 +75,7 @@ model = train.train_model(model_name, model, dataloaders_all, device, optimizer_
 
 
 # %% For Inference
+
 from PIL import Image
 import numpy as np
 import torchvision.transforms as transforms
@@ -140,7 +151,7 @@ for image_id, image in enumerate(tqdm(images)):
     # break
 mse = mse / len(labels)
 vari = vari / len(labels)
-print(mse, vari)
+print('\n', mse, vari)
 
 print('R2 Score: ', sklearn.metrics.r2_score(Y_true, Y_pred))
 print('MSE: ', sklearn.metrics.mean_squared_error(Y_true, Y_pred))
@@ -154,6 +165,7 @@ print('Accuracy: ', sklearn.metrics.accuracy_score([int(i) for i in Y_true], [ro
 plot_confusion_matrix_from_data(Y_true, Y_pred, columns=['None', 'Mild', 'Mode', 'Seve'], figsize=(4,4), fz=16, fmt='d', annot=True)
 
 # %%
+
 import tensorly as tl
 from thop import profile,clever_format
 import time
@@ -185,6 +197,6 @@ for count in tqdm(range(0,1000)):
     count += 1
 
 elapsed_time = time.time() - start_time
-print(elapsed_time/10/1000*100)
+print('\n', elapsed_time/10/1000*100)
 
 # %%

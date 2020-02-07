@@ -9,7 +9,7 @@ import shutil
 import os
 import sklearn.metrics
 
-def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func, scheduler, num_epochs=25):
+def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func, scheduler, num_epochs=25, regression=False):
     existing_epoches = 0
 
     need_mse = False
@@ -18,7 +18,7 @@ def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func,
     if model_name == 'type':
         need_acc = True
         topk = (1,3,)
-    elif model_name == 'correct':
+    elif model_name.find('correct') >= 0:
         need_acc_single_class = True
         topk = (1,)
     elif model_name.find('level_cls') >= 0:
@@ -96,7 +96,7 @@ def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func,
                         outputs = model(inputs)[0]
                     else:
                         outputs = model(inputs)
-                    loss = loss_func(outputs, labels.long())
+                    loss = loss_func(outputs, labels if regression else labels.long())
 
                     if need_acc:
                         _, pred_acc = outputs.topk(maxk, 1, True, True)
