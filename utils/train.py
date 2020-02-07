@@ -21,10 +21,10 @@ def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func,
     elif model_name == 'correct':
         need_acc_single_class = True
         topk = (1,)
-    elif model_name == 'level_cls':
+    elif model_name.find('level_cls') >= 0:
         need_acc = True
         need_mse = True
-        topk = (1,2,)
+        topk = (1,)
     elif model_name == 'level':
         need_mse = True
     
@@ -81,7 +81,10 @@ def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func,
             Y_pred = []
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
-                labels = labels.to(device)             
+                if model_name == 'level_cls':
+                    labels = labels.to(device, dtype=torch.int64)             
+                else:
+                    labels = labels.to(device)             
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -89,13 +92,16 @@ def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func,
                 # forward
                 # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
-                    outputs = model(inputs)
-                    loss = loss_func(outputs, labels)
+                    if phase == 'train' and model_name.find('inception') >= 0:
+                        outputs = model(inputs)[0]
+                    else:
+                        outputs = model(inputs)
+                    loss = loss_func(outputs, labels.long())
 
                     if need_acc:
                         _, pred_acc = outputs.topk(maxk, 1, True, True)
                         pred_acc = pred_acc.t()
-                        correct = pred_acc.eq(labels.max(1)[1].view(1, -1).expand_as(pred_acc))
+                        correct = pred_acc.eq(labels)
 
                         for k_id, k in enumerate(topk):
                             correct_k = correct[:k].view(-1).float().sum(0)
@@ -109,7 +115,7 @@ def train_model(model_name, model, dataloaders_all,device, optimizer, loss_func,
 
                     if len(outputs) > 1 and need_mse:
                         preds_mse = outputs.max(1)[1]
-                        labels_mse = labels.max(1)[1]
+                        labels_mse = labels
                         se += ((preds_mse-labels_mse)*(preds_mse-labels_mse)).sum()
                         totals_se += len(labels)
 

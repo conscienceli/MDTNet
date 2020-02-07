@@ -24,10 +24,11 @@ class Crossing_Dataset(torch.utils.data.Dataset):
             severity = int(record[4])
             if severity > 3 or severity < 0:
                 continue
-            type_label = np.zeros((4))
-            type_label[severity] = 1
-            path = record[3].split('/')[1:]
-            path = './data/' + '/'.join(path)
+            # type_label = np.zeros((4), dtype=np.int8)
+            # type_label[severity] = 1
+            type_label = severity
+            path = record[3].split('/')[2:]
+            path = './data/Archive_cropped/' + '/'.join(path)
             self.images.append(path)
             self.labels.append(type_label)
                 
@@ -44,8 +45,9 @@ class Crossing_Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):        
         image = self.images[idx]
         image = Image.open(image)
-        image = np.array(image)[1422:1422+345, 150:150+345,:]
-        image = Image.fromarray(image, mode='RGB')
+
+        #for gc only
+        # image = np.array(image)[:,:,1][...,np.newaxis]
         
         label = self.labels[idx]
         
@@ -65,6 +67,10 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
         csv_path,
         transform = transforms.Compose([
             ImgAugTransform(),
+
+            #for gc only
+            # lambda x: Image.fromarray(x[:,:,0], mode='L'),
+
             lambda x: Image.fromarray(x),
             transforms.ToTensor(),
         ]))
@@ -74,8 +80,8 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
             transforms.ToTensor(),
         ]))
     
-    if os.path.exists('data/sampler_type.pickle'):
-        with open('data/sampler_type.pickle', 'rb') as f:
+    if os.path.exists('data/sampler_level_cls.pickle'):
+        with open('data/sampler_level_cls.pickle', 'rb') as f:
             train_sampler, valid_sampler = pickle.load(f)
     else:
         num_train = len(train_dataset)
@@ -90,7 +96,7 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
         np.random.shuffle(valid_idx)
         train_sampler = SubsetRandomSampler(train_idx)
         valid_sampler = SubsetRandomSampler(valid_idx)
-        with open('data/sampler_type.pickle', 'wb') as f:
+        with open('data/sampler_level_cls.pickle', 'wb') as f:
             pickle.dump([train_sampler, valid_sampler],f)
 
     train_loader = torch.utils.data.DataLoader(
