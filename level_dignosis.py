@@ -133,3 +133,17 @@ print(sklearn.metrics.mean_squared_error(Y_true, Y_pred))
 print(sklearn.metrics.explained_variance_score(Y_true, Y_pred))
 
 # %%
+print(sklearn.metrics.cohen_kappa_score([int(i) for i in Y_true], [round(i) for i in Y_pred]))
+print(sklearn.metrics.accuracy_score([int(i) for i in Y_true], [round(i) for i in Y_pred]))
+
+
+# %%
+import pandas
+df = pandas.DataFrame(data={"label": Y_true, "pred": Y_pred})
+df.to_csv("./raw.csv", sep=',',index=False)
+
+import pandas
+df = pandas.DataFrame(data={"label": [int(i) for i in Y_true], "pred": [round(i) for i in Y_pred]})
+df.to_csv("./raw(int).csv", sep=',',index=False)
+
+# %%
