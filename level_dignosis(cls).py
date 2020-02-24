@@ -1,9 +1,20 @@
 # To add a new cell, type '# %%'
 # To add a new markdown cell, type '# %% [markdown]'
 #%% Configuration
-config = 'pre_trained_resnet50'
-# config = 'pre_trained_inception_v3'
-# config = 'pre_trained_densenet'
+config = 'pre_trained_boss1' # 3
+# config = 'pre_trained_boss5' # 1
+config = 'pre_trained_boss4' # 0
+# config = 'pre_trained_boss2'
+# config = 'pre_trained_boss3'
+# config = 'pre_trained_focal2'
+# config = 'pre_trained_focal3'
+# config = 'pre_trained_focal4'
+# config = 'pre_trained_focal5'
+# config = 'pre_trained_focal6'
+# config = 'pre_trained_xnet' #
+# config = 'pre_trained_resnet50' #
+# config = 'pre_trained_inception_v3' #
+# config = 'pre_trained_densenet' #
 # config = 'pre_trained_squeezenet'
 
 import torch
@@ -44,6 +55,121 @@ elif config == "pre_trained_densenet":
     model_name = 'level_cls_densenet'
     BATCH_SIZE = 64
     NUM_WORKERS = 8
+elif config == "pre_trained_xnet":
+    # from utils.model import XNet
+    # model = XNet(num_classes=4)
+    
+    # # model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+
+    # #for gc only
+    # # model.features[0] = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    
+    # model_name = 'level_cls_xnet'
+    # BATCH_SIZE = 64
+    # NUM_WORKERS = 8
+    from torchvision.models import densenet121
+    model = densenet121(pretrained=True)
+    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+
+    #for gc only
+    # model.features[0] = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    
+    model_name = 'level_cls_xnet'
+    BATCH_SIZE = 64
+    NUM_WORKERS = 8
+    from utils.loss import FocalLoss
+    loss_func = FocalLoss(gamma=2, alpha=[0.15, 0.17, 0.23, 1])
+
+elif config == "pre_trained_focal2":
+    from torchvision.models import densenet121
+    model = densenet121(pretrained=True)
+    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+
+    model_name = 'level_cls_focal2'
+    BATCH_SIZE = 64
+    NUM_WORKERS = 8
+    from utils.loss import FocalLoss
+    loss_func = FocalLoss(gamma=5, alpha=[0.15, 0.17, 0.23, 1])
+
+elif config == "pre_trained_focal3":
+    from torchvision.models import densenet121
+    model = densenet121(pretrained=True)
+    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+
+    model_name = 'level_cls_focal3'
+    BATCH_SIZE = 64
+    NUM_WORKERS = 8
+    from utils.loss import FocalLoss
+    loss_func = FocalLoss(gamma=1, alpha=[0.15, 0.17, 0.23, 1])
+
+elif config == "pre_trained_focal4":
+    from torchvision.models import densenet121
+    model = densenet121(pretrained=True)
+    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+
+    model_name = 'level_cls_focal4'
+    BATCH_SIZE = 64
+    NUM_WORKERS = 8
+    from utils.loss import FocalLoss
+    loss_func = FocalLoss(gamma=10, alpha=[0.15, 0.17, 0.23, 1])
+
+elif config == "pre_trained_focal5":
+    from torchvision.models import densenet121
+    model = densenet121(pretrained=True)
+    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+
+    model_name = 'level_cls_focal5'
+    BATCH_SIZE = 64
+    NUM_WORKERS = 8
+    from utils.loss import FocalLoss
+    loss_func = FocalLoss(gamma=3, alpha=[0.15, 0.17, 0.23, 1])
+
+elif config == "pre_trained_focal6":
+    from torchvision.models import densenet121
+    model = densenet121(pretrained=True)
+    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+
+    model_name = 'level_cls_focal6'
+    BATCH_SIZE = 64
+    NUM_WORKERS = 8
+    from utils.loss import FocalLoss
+    loss_func = FocalLoss(gamma=4, alpha=[0.15, 0.17, 0.23, 1])
+
+elif config == "pre_trained_boss1":
+    from utils.model_boss import BossNet
+    model = BossNet(num_classes=4)
+    model_name = 'level_cls_bossnet'
+    BATCH_SIZE = 200
+    NUM_WORKERS = 8
+
+elif config == "pre_trained_boss2":
+    from utils.model_boss import BossNet
+    model = BossNet(num_classes=4)
+    model_name = 'level_cls_bossnet2'
+    BATCH_SIZE = 200
+    NUM_WORKERS = 8
+
+elif config == "pre_trained_boss3":
+    from utils.model_boss import BossNet
+    model = BossNet(num_classes=4)
+    model_name = 'level_cls_bossnet3'
+    BATCH_SIZE = 200
+    NUM_WORKERS = 8
+
+elif config == "pre_trained_boss4":
+    from utils.model_boss import BossNet
+    model = BossNet(num_classes=4)
+    model_name = 'level_cls_bossnet4'
+    BATCH_SIZE = 200
+    NUM_WORKERS = 8
+
+elif config == "pre_trained_boss5":
+    from utils.model_boss import BossNet
+    model = BossNet(num_classes=4)
+    model_name = 'level_cls_bossnet5'
+    BATCH_SIZE = 200
+    NUM_WORKERS = 8
+
 # elif config == "pre_trained_squeezenet":
 #     from torchvision.models import squeezenet1_0
 #     model = squeezenet1_0(pretrained=True)
@@ -161,8 +287,8 @@ print('Kappa Score: ', sklearn.metrics.cohen_kappa_score([int(i) for i in Y_true
 print('Accuracy: ', sklearn.metrics.accuracy_score([int(i) for i in Y_true], [round(i) for i in Y_pred]))
 
 
-%matplotlib inline
-plot_confusion_matrix_from_data(Y_true, Y_pred, columns=['None', 'Mild', 'Mode', 'Seve'], figsize=(4,4), fz=16, fmt='d', annot=True)
+# %matplotlib inline
+plot_confusion_matrix_from_data(Y_true, Y_pred, columns=['None', 'Mild', 'Mod.', 'Sev.'], figsize=(4,4), fz=18, fmt='d', annot=True)
 
 # %%
 

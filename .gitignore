@@ -7,3 +7,6 @@ results*/*
 *__pycache__*
 *.eps
 *.csv
+temp/*
+*.png
+*temp*
