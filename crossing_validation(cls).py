@@ -18,7 +18,7 @@ if config == "pre_trained_resnet50":
     model.fc = nn.Linear(in_features=2048, out_features=1, bias=True)
     #for gc only
     # model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-    model_name = 'correct_cls_resnet'
+    model_name = 'validation_cls_resnet'
     BATCH_SIZE = 96
     NUM_WORKERS = 8
 
@@ -29,7 +29,7 @@ elif config == "pre_trained_inception_v3":
     #for gc only
     # model.Conv2d_1a_3x3.conv = nn.Conv2d(1, 32, bias=False, kernel_size=3, stride=2)
     # model.transform_input = False
-    model_name = 'correct_cls_inception'
+    model_name = 'validation_cls_inception'
     BATCH_SIZE = 128
     NUM_WORKERS = 8
 
@@ -39,7 +39,7 @@ elif config == "pre_trained_densenet":
     model.classifier = nn.Linear(in_features=1024, out_features=1, bias=True)
     #for gc only
     # model.features[0] = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-    model_name = 'correct_cls_densenet'
+    model_name = 'validation_cls_densenet'
     BATCH_SIZE = 64
     NUM_WORKERS = 8
 
@@ -50,7 +50,7 @@ model = model.to(device)
 # %% Training 
 
 from utils import train
-from utils.dataset_correct import gen_train_loaders
+from utils.dataset_validation import gen_train_loaders
 import torch.nn.functional as F
 
 dataloaders_all = gen_train_loaders(BATCH_SIZE, NUM_WORKERS, test_image_num=test_image_num)

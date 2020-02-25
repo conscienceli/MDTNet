@@ -80,8 +80,8 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS, test_image_num=100):
         ]),
         test_image_num=test_image_num)
     
-    if os.path.exists('data/sampler_correct.pickle'):
-        with open('data/sampler_correct.pickle', 'rb') as f:
+    if os.path.exists('data/sampler_validation.pickle'):
+        with open('data/sampler_validation.pickle', 'rb') as f:
             train_sampler, valid_sampler = pickle.load(f)
     else:
         num_train = len(train_dataset)
@@ -96,7 +96,7 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS, test_image_num=100):
         np.random.shuffle(valid_idx)
         train_sampler = SubsetRandomSampler(train_idx)
         valid_sampler = SubsetRandomSampler(valid_idx)
-        with open('data/sampler_correct.pickle', 'wb') as f:
+        with open('data/sampler_validation.pickle', 'wb') as f:
             pickle.dump([train_sampler, valid_sampler],f)
 
     train_loader = torch.utils.data.DataLoader(
