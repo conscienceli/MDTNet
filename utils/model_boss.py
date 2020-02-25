@@ -44,52 +44,52 @@ class BossNet(nn.Module):
         for param in self.densenet_model1.parameters():
             param.requires_grad = False
 
-        # self.densenet_model2 = densenet121(pretrained=True)
-        # self.densenet_model2.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-        # checkpoint = torch.load(f'./saved_models/level_cls_xnet_best.pth.tar')
-        # self.densenet_model2.load_state_dict(checkpoint['state_dict'])
-        # self.densenet_model2.classifier = EqualLayer()
-        # for param in self.densenet_model2.parameters():
-        #     param.requires_grad = False
-
-        # self.densenet_model3 = densenet121(pretrained=True)
-        # self.densenet_model3.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+        # self.focal_model2 = densenet121(pretrained=True)
+        # self.focal_model2.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
         # checkpoint = torch.load(f'./saved_models/level_cls_focal2_best.pth.tar')
-        # self.densenet_model3.load_state_dict(checkpoint['state_dict'])
-        # self.densenet_model3.classifier = EqualLayer()
-        # for param in self.densenet_model3.parameters():
+        # self.focal_model2.load_state_dict(checkpoint['state_dict'])
+        # self.focal_model2.classifier = EqualLayer()
+        # for param in self.focal_model2.parameters():
         #     param.requires_grad = False
 
-        self.densenet_model4 = densenet121(pretrained=True)
-        self.densenet_model4.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-        checkpoint = torch.load(f'./saved_models/level_cls_focal3_best.pth.tar')
-        self.densenet_model4.load_state_dict(checkpoint['state_dict'])
-        self.densenet_model4.classifier = EqualLayer()
-        for param in self.densenet_model4.parameters():
+        # self.focal_model5 = densenet121(pretrained=True)
+        # self.focal_model5.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+        # checkpoint = torch.load(f'./saved_models/level_cls_focal5_best.pth.tar')
+        # self.focal_model5.load_state_dict(checkpoint['state_dict'])
+        # self.focal_model5.classifier = EqualLayer()
+        # for param in self.focal_model5.parameters():
+        #     param.requires_grad = False
+
+        self.focal_model1 = densenet121(pretrained=True)
+        self.focal_model1.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+        checkpoint = torch.load(f'./saved_models/level_cls_focal1_best.pth.tar')
+        self.focal_model1.load_state_dict(checkpoint['state_dict'])
+        self.focal_model1.classifier = EqualLayer()
+        for param in self.focal_model1.parameters():
             param.requires_grad = False
 
-        # self.densenet_model5 = densenet121(pretrained=True)
-        # self.densenet_model5.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+        # self.focal_model10 = densenet121(pretrained=True)
+        # self.focal_model10.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+        # checkpoint = torch.load(f'./saved_models/level_cls_focal10_best.pth.tar')
+        # self.focal_model10.load_state_dict(checkpoint['state_dict'])
+        # self.focal_model10.classifier = EqualLayer()
+        # for param in self.focal_model10.parameters():
+        #     param.requires_grad = False
+
+        # self.focal_model3 = densenet121(pretrained=True)
+        # self.focal_model3.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+        # checkpoint = torch.load(f'./saved_models/level_cls_focal3_best.pth.tar')
+        # self.focal_model3.load_state_dict(checkpoint['state_dict'])
+        # self.focal_model3.classifier = EqualLayer()
+        # for param in self.focal_model3.parameters():
+        #     param.requires_grad = False
+
+        # self.focal_model4 = densenet121(pretrained=True)
+        # self.focal_model4.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
         # checkpoint = torch.load(f'./saved_models/level_cls_focal4_best.pth.tar')
-        # self.densenet_model5.load_state_dict(checkpoint['state_dict'])
-        # self.densenet_model5.classifier = EqualLayer()
-        # for param in self.densenet_model5.parameters():
-        #     param.requires_grad = False
-
-        # self.densenet_model6 = densenet121(pretrained=True)
-        # self.densenet_model6.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-        # checkpoint = torch.load(f'./saved_models/level_cls_focal5_best.pth.tar')
-        # self.densenet_model6.load_state_dict(checkpoint['state_dict'])
-        # self.densenet_model6.classifier = EqualLayer()
-        # for param in self.densenet_model6.parameters():
-        #     param.requires_grad = False
-
-        # self.densenet_model7 = densenet121(pretrained=True)
-        # self.densenet_model7.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-        # checkpoint = torch.load(f'./saved_models/level_cls_focal6_best.pth.tar')
-        # self.densenet_model7.load_state_dict(checkpoint['state_dict'])
-        # self.densenet_model7.classifier = EqualLayer()
-        # for param in self.densenet_model7.parameters():
+        # self.focal_model4.load_state_dict(checkpoint['state_dict'])
+        # self.focal_model4.classifier = EqualLayer()
+        # for param in self.focal_model4.parameters():
         #     param.requires_grad = False
 
 
@@ -105,13 +105,12 @@ class BossNet(nn.Module):
                 self.resnet_model(x),
                 self.inception_model(x),
                 self.densenet_model1(x),
-                # self.densenet_model2(x),
-                # self.densenet_model3(x),
-                self.densenet_model4(x),
-
-                # self.densenet_model5(x),
-                # self.densenet_model6(x),
-                # self.densenet_model7(x),
+                self.focal_model1(x),
+                # self.focal_model2(x),
+                # self.focal_model3(x),
+                # self.focal_model4(x),
+                # self.focal_model5(x),
+                # self.focal_model10(x),
             )
             , 1
         )

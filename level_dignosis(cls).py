@@ -1,21 +1,24 @@
 # To add a new cell, type '# %%'
 # To add a new markdown cell, type '# %% [markdown]'
 #%% Configuration
-config = 'pre_trained_boss1' # 3
-# config = 'pre_trained_boss5' # 1
-config = 'pre_trained_boss4' # 0
-# config = 'pre_trained_boss2'
-# config = 'pre_trained_boss3'
+
+#############base models
+config = 'pre_trained_resnet50'
+# config = 'pre_trained_inception_v3'
+# config = 'pre_trained_densenet'
+
+#############focal models
+# config = 'pre_trained_focal1'
 # config = 'pre_trained_focal2'
 # config = 'pre_trained_focal3'
 # config = 'pre_trained_focal4'
 # config = 'pre_trained_focal5'
-# config = 'pre_trained_focal6'
-# config = 'pre_trained_xnet' #
-# config = 'pre_trained_resnet50' #
-# config = 'pre_trained_inception_v3' #
-# config = 'pre_trained_densenet' #
-# config = 'pre_trained_squeezenet'
+# config = 'pre_trained_focal10'
+
+#############MDTNet
+# config = 'pre_trained_boss0'
+config = 'pre_trained_boss1'
+# config = 'pre_trained_boss3'
 
 import torch
 import torch.nn as nn
@@ -25,127 +28,104 @@ if config == "pre_trained_resnet50":
     from torchvision.models import resnet50
     model = resnet50(pretrained=True)
     model.fc = nn.Linear(in_features=2048, out_features=4, bias=True)
-    
     #for gc only
     # model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-    
     model_name = 'level_cls_resnet'
     BATCH_SIZE = 96
     NUM_WORKERS = 8
+
 elif config == "pre_trained_inception_v3":
     from torchvision.models import inception_v3
     model = inception_v3(pretrained=True)
     model.fc = nn.Linear(in_features=2048, out_features=4, bias=True)
-
     #for gc only
     # model.Conv2d_1a_3x3.conv = nn.Conv2d(1, 32, bias=False, kernel_size=3, stride=2)
     # model.transform_input = False
-
     model_name = 'level_cls_inception'
     BATCH_SIZE = 128
     NUM_WORKERS = 8
+
 elif config == "pre_trained_densenet":
     from torchvision.models import densenet121
     model = densenet121(pretrained=True)
     model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-
     #for gc only
     # model.features[0] = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-    
     model_name = 'level_cls_densenet'
     BATCH_SIZE = 64
     NUM_WORKERS = 8
-elif config == "pre_trained_xnet":
-    # from utils.model import XNet
-    # model = XNet(num_classes=4)
-    
-    # # model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
 
-    # #for gc only
-    # # model.features[0] = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-    
-    # model_name = 'level_cls_xnet'
-    # BATCH_SIZE = 64
-    # NUM_WORKERS = 8
+elif config == "pre_trained_focal1":
     from torchvision.models import densenet121
     model = densenet121(pretrained=True)
     model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-
-    #for gc only
-    # model.features[0] = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-    
-    model_name = 'level_cls_xnet'
-    BATCH_SIZE = 64
-    NUM_WORKERS = 8
-    from utils.loss import FocalLoss
-    loss_func = FocalLoss(gamma=2, alpha=[0.15, 0.17, 0.23, 1])
-
-elif config == "pre_trained_focal2":
-    from torchvision.models import densenet121
-    model = densenet121(pretrained=True)
-    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-
-    model_name = 'level_cls_focal2'
-    BATCH_SIZE = 64
-    NUM_WORKERS = 8
-    from utils.loss import FocalLoss
-    loss_func = FocalLoss(gamma=5, alpha=[0.15, 0.17, 0.23, 1])
-
-elif config == "pre_trained_focal3":
-    from torchvision.models import densenet121
-    model = densenet121(pretrained=True)
-    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-
-    model_name = 'level_cls_focal3'
+    model_name = 'level_cls_focal1'
     BATCH_SIZE = 64
     NUM_WORKERS = 8
     from utils.loss import FocalLoss
     loss_func = FocalLoss(gamma=1, alpha=[0.15, 0.17, 0.23, 1])
 
-elif config == "pre_trained_focal4":
+elif config == "pre_trained_focal2":
     from torchvision.models import densenet121
     model = densenet121(pretrained=True)
     model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-
-    model_name = 'level_cls_focal4'
+    model_name = 'level_cls_focal2'
     BATCH_SIZE = 64
     NUM_WORKERS = 8
     from utils.loss import FocalLoss
-    loss_func = FocalLoss(gamma=10, alpha=[0.15, 0.17, 0.23, 1])
+    loss_func = FocalLoss(gamma=2, alpha=[0.15, 0.17, 0.23, 1])
 
-elif config == "pre_trained_focal5":
+elif config == "pre_trained_focal3":
     from torchvision.models import densenet121
     model = densenet121(pretrained=True)
     model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-
-    model_name = 'level_cls_focal5'
+    model_name = 'level_cls_focal3'
     BATCH_SIZE = 64
     NUM_WORKERS = 8
     from utils.loss import FocalLoss
     loss_func = FocalLoss(gamma=3, alpha=[0.15, 0.17, 0.23, 1])
 
-elif config == "pre_trained_focal6":
+elif config == "pre_trained_focal4":
     from torchvision.models import densenet121
     model = densenet121(pretrained=True)
     model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
-
-    model_name = 'level_cls_focal6'
+    model_name = 'level_cls_focal4'
     BATCH_SIZE = 64
     NUM_WORKERS = 8
     from utils.loss import FocalLoss
     loss_func = FocalLoss(gamma=4, alpha=[0.15, 0.17, 0.23, 1])
 
-elif config == "pre_trained_boss1":
+elif config == "pre_trained_focal5":
+    from torchvision.models import densenet121
+    model = densenet121(pretrained=True)
+    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+    model_name = 'level_cls_focal5'
+    BATCH_SIZE = 64
+    NUM_WORKERS = 8
+    from utils.loss import FocalLoss
+    loss_func = FocalLoss(gamma=5, alpha=[0.15, 0.17, 0.23, 1])
+
+elif config == "pre_trained_focal10":
+    from torchvision.models import densenet121
+    model = densenet121(pretrained=True)
+    model.classifier = nn.Linear(in_features=1024, out_features=4, bias=True)
+    model_name = 'level_cls_focal10'
+    BATCH_SIZE = 64
+    NUM_WORKERS = 8
+    from utils.loss import FocalLoss
+    loss_func = FocalLoss(gamma=10, alpha=[0.15, 0.17, 0.23, 1])
+
+elif config == "pre_trained_boss0":
     from utils.model_boss import BossNet
     model = BossNet(num_classes=4)
-    model_name = 'level_cls_bossnet'
+    model_name = 'level_cls_bossnet0'
     BATCH_SIZE = 200
     NUM_WORKERS = 8
 
-elif config == "pre_trained_boss2":
+elif config == "pre_trained_boss1":
     from utils.model_boss import BossNet
     model = BossNet(num_classes=4)
-    model_name = 'level_cls_bossnet2'
+    model_name = 'level_cls_bossnet1'
     BATCH_SIZE = 200
     NUM_WORKERS = 8
 
@@ -156,27 +136,6 @@ elif config == "pre_trained_boss3":
     BATCH_SIZE = 200
     NUM_WORKERS = 8
 
-elif config == "pre_trained_boss4":
-    from utils.model_boss import BossNet
-    model = BossNet(num_classes=4)
-    model_name = 'level_cls_bossnet4'
-    BATCH_SIZE = 200
-    NUM_WORKERS = 8
-
-elif config == "pre_trained_boss5":
-    from utils.model_boss import BossNet
-    model = BossNet(num_classes=4)
-    model_name = 'level_cls_bossnet5'
-    BATCH_SIZE = 200
-    NUM_WORKERS = 8
-
-# elif config == "pre_trained_squeezenet":
-#     from torchvision.models import squeezenet1_0
-#     model = squeezenet1_0(pretrained=True)
-#     model.classifier[1] = nn.Conv2d(512, 4, kernel_size=(1, 1), stride=(1, 1))
-#     model_name = 'level_cls_squeezenet'
-#     BATCH_SIZE = 192
-#     NUM_WORKERS = 8
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 model = model.to(device)
@@ -242,12 +201,9 @@ model = model.to(device)
 for image_id, image in enumerate(tqdm(images)):
     image = Image.open(image)
     raw_image = image.copy()
-    # image = image[np.newaxis,...]
-    # image = Image.fromarray(image, mode='RGB')
 
     #for gc only
     # image = np.array(image)[:,:,1][...,np.newaxis]
-
 
     transform = transforms.Compose([
             transforms.ToTensor(),
@@ -265,16 +221,10 @@ for image_id, image in enumerate(tqdm(images)):
 
     raw_image.save(f'results/ID({image_id})-PR({preds.item()})-GT({labels[image_id]}).png')
 
-    # if config == "pre_trained_resnet50":
-    #     model = model.cpu()
-    #     vis_cam(device, model, raw_image, 0, 7, f'ID({image_id})-PR({preds.item()})-GT({labels[image_id]})')
-    #     model = model.cuda()
-    # elif config == "pre_trained_densenet":
-    #     model = model.cpu()
-    #     vis_cam(device, model, raw_image, 0, 'denselayer11', f'ID({image_id})-PR({preds.item()})-GT({labels[image_id]})')
-    #     model = model.cuda()
+    # model = model.cpu()
+    # vis_cam(device, model, raw_image, 0, 7, f'ID({image_id})-PR({preds.item()})-GT({labels[image_id]})')
+    # model = model.cuda()
 
-    # break
 mse = mse / len(labels)
 vari = vari / len(labels)
 print('\n', mse, vari)
