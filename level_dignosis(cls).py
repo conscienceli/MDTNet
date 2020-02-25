@@ -1,6 +1,7 @@
 # To add a new cell, type '# %%'
 # To add a new markdown cell, type '# %% [markdown]'
 #%% Configuration
+test_image_num = 5
 
 #############base models
 config = 'pre_trained_resnet50'
@@ -81,11 +82,11 @@ model = model.to(device)
 
 # %% For Training
 
-from utils import dataset, train
+from utils import train
 from utils.dataset_level_cls import gen_train_loaders
 import torch.nn.functional as F
 
-dataloaders_all = gen_train_loaders(BATCH_SIZE, NUM_WORKERS)
+dataloaders_all = gen_train_loaders(BATCH_SIZE, NUM_WORKERS, test_image_num=test_image_num)
 
 # Observe that all parameters are being optimized
 optimizer_ft = torch.optim.Adam(model.parameters(), lr=1e-4)
@@ -115,9 +116,9 @@ labels = []
 csv_path = './data/patch - patch_list.csv'
 with open(csv_path, 'r', encoding='utf-8') as f:
     records = f.read()
-records = records.split('\n')[-100:]
+records = records.split('\n')[-test_image_num:]
 
-for record in records[1:]:
+for record in records:
     record = record.split(',')
     severity = int(record[4])
     if severity > 3 or severity < 0:

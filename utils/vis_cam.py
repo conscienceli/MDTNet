@@ -1,4 +1,4 @@
-from utils import dataset, train
+from utils import train
 from torchvision.models import resnet50
 import torch
 import torch.nn as nn

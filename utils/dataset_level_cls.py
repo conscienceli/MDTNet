@@ -9,16 +9,16 @@ import numpy as np
 
 
 class Crossing_Dataset(torch.utils.data.Dataset):
-    def __init__(self, csv_path, transform=None, for_test=False):
+    def __init__(self, csv_path, transform=None, for_test=False, test_image_num=100):
         self.images = []
         self.labels = []
 
         with open(csv_path, 'r', encoding='utf-8') as f:
             records = f.read()
         if not for_test:
-            records = records.split('\n')[:-100]
+            records = records.split('\n')[:-test_image_num]
         else:
-            records = records.split('\n')[-100:]
+            records = records.split('\n')[-test_image_num:]
         for record in records[1:]:
             record = record.split(',')
             severity = int(record[4])
@@ -60,7 +60,7 @@ class Crossing_Dataset(torch.utils.data.Dataset):
         return [image, label]
 
 
-def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
+def gen_train_loaders(BATCH_SIZE, NUM_WORKERS, test_image_num=100):
     csv_path = './data/patch - patch_list.csv'
   
     train_dataset = Crossing_Dataset(
@@ -73,12 +73,14 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
 
             lambda x: Image.fromarray(x),
             transforms.ToTensor(),
-        ]))
+        ]), 
+        test_image_num=test_image_num)
     valid_dataset = Crossing_Dataset(
         csv_path,
         transform = transforms.Compose([
             transforms.ToTensor(),
-        ]))
+        ]), 
+        test_image_num=test_image_num)
     
     if os.path.exists('data/sampler_level_cls.pickle'):
         with open('data/sampler_level_cls.pickle', 'rb') as f:
@@ -86,7 +88,7 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
     else:
         num_train = len(train_dataset)
         indices = list(range(num_train))
-        split = int(np.floor(0.1 * num_train))
+        split = int(np.ceil(0.1 * num_train))
 
         np.random.seed(32)
         # np.random.shuffle(indices)
@@ -111,7 +113,7 @@ def gen_train_loaders(BATCH_SIZE, NUM_WORKERS):
     return (train_loader, valid_loader)
 
 
-def gen_test_loaders(BATCH_SIZE, NUM_WORKERS):
+def gen_test_loaders(BATCH_SIZE, NUM_WORKERS, test_image_num=100):
     csv_path = './data/patch - patch_list.csv'
     
 #     # Data loading code
@@ -124,7 +126,8 @@ def gen_test_loaders(BATCH_SIZE, NUM_WORKERS):
         transform = transforms.Compose([
             transforms.ToTensor(),
         ]),
-        for_test=True)
+        for_test=True,
+        test_image_num=test_image_num)
     
     test_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size=BATCH_SIZE, shuffle=False,
