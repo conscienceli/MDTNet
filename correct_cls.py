@@ -2,10 +2,11 @@
 # To add a new markdown cell, type '# %% [markdown]'
 
 #%% Configuration
+test_image_num = 5
+
 config = 'pre_trained_resnet50'
-config = 'pre_trained_inception_v3'
-config = 'pre_trained_densenet'
-# config = 'pre_trained_squeezenet'
+# config = 'pre_trained_inception_v3'
+# config = 'pre_trained_densenet'
 
 import torch
 import torch.nn as nn
@@ -15,60 +16,48 @@ if config == "pre_trained_resnet50":
     from torchvision.models import resnet50
     model = resnet50(pretrained=True)
     model.fc = nn.Linear(in_features=2048, out_features=1, bias=True)
-
     #for gc only
     # model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-
     model_name = 'correct_cls_resnet'
     BATCH_SIZE = 96
     NUM_WORKERS = 8
+
 elif config == "pre_trained_inception_v3":
     from torchvision.models import inception_v3
     model = inception_v3(pretrained=True)
     model.fc = nn.Linear(in_features=2048, out_features=1, bias=True)
-
     #for gc only
     # model.Conv2d_1a_3x3.conv = nn.Conv2d(1, 32, bias=False, kernel_size=3, stride=2)
     # model.transform_input = False
-
     model_name = 'correct_cls_inception'
     BATCH_SIZE = 128
     NUM_WORKERS = 8
+
 elif config == "pre_trained_densenet":
     from torchvision.models import densenet121
     model = densenet121(pretrained=True)
     model.classifier = nn.Linear(in_features=1024, out_features=1, bias=True)
-
     #for gc only
     # model.features[0] = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-    
     model_name = 'correct_cls_densenet'
     BATCH_SIZE = 64
     NUM_WORKERS = 8
-# elif config == "pre_trained_squeezenet":
-#     from torchvision.models import squeezenet1_0
-#     model = squeezenet1_0(pretrained=True)
-#     model.classifier[1] = nn.Conv2d(512, 1, kernel_size=(1, 1), stride=(1, 1))
-#     model_name = 'correct_cls_squeezenet'
-#     BATCH_SIZE = 192
-#     NUM_WORKERS = 8
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 model = model.to(device)
 
 # %% Training 
 
-from utils import dataset, train
+from utils import train
 from utils.dataset_correct import gen_train_loaders
 import torch.nn.functional as F
 
-dataloaders_all = gen_train_loaders(BATCH_SIZE, NUM_WORKERS)
+dataloaders_all = gen_train_loaders(BATCH_SIZE, NUM_WORKERS, test_image_num=test_image_num)
 
 # Observe that all parameters are being optimized
 optimizer_ft = torch.optim.Adam(model.parameters(), lr=1e-4)
-
 exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
-
 loss_func = F.binary_cross_entropy_with_logits
 model = train.train_model(model_name, model, dataloaders_all, device, optimizer_ft, loss_func, exp_lr_scheduler, num_epochs=20, regression=True)
 
@@ -95,9 +84,7 @@ csv_path = './data/patch - patch_list.csv'
 with open(csv_path, 'r', encoding='utf-8') as f:
     records = f.read()
 records_number = len(records.split('\n'))
-test_range = 100
-# test_range = records_number-1
-records = records.split('\n')[-test_range:]
+records = records.split('\n')[-test_image_num:]
 
 for record in records:
     record = record.split(',')
@@ -121,8 +108,6 @@ model = model.to(device)
 for image_id, image in enumerate(tqdm(images)):
     image = Image.open(image)
     raw_image = image.copy()
-    # image = image[np.newaxis,...]
-    # image = Image.fromarray(image, mode='RGB')
 
     #for gc only
     # image = np.array(image)[:,:,1][...,np.newaxis]
@@ -153,13 +138,11 @@ for image_id, image in enumerate(tqdm(images)):
     elif preds.item() < 0.5 and labels[image_id] == 0:
         tn += 1.
 
-    # raw_image.save(f'results_correct/ROW({image_id+records_number-test_range+1:04})-PR({preds.item():.2})-GT({labels[image_id]})-{isCorrect}.png')
     raw_image.save(f'results/ID({image_id})-PR({preds.item()})-GT({labels[image_id]}).png')
 
-    # if config == "pre_trained_resnet50":
-    #     model = model.cpu()
-    #     vis_cam(device, model, raw_image, 0, 7, f'ID({image_id})-PR({preds.item()})-GT({labels[image_id]})')
-    #     model = model.cuda()
+    # model = model.cpu()
+    # vis_cam(device, model, raw_image, 0, 7, f'ID({image_id})-PR({preds.item()})-GT({labels[image_id]})')
+    # model = model.cuda()
 
 print('\naccuracy: ', corrects/ float(len(images)))
 print('precision: ', tp/(tp+fp))
